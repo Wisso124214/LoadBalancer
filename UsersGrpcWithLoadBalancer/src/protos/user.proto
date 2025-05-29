@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package users;
+
+import "common.proto";
+
+service UserService {
+    rpc getAllUsers (USER_REQUEST) returns (USER_RESPONSE) {};
+    rpc getUserById (USER_REQUEST) returns (USER_BY_ID_RESPONSE) {};
+    rpc createUser (USER_REQUEST) returns (USER_RESPONSE) {};
+    rpc updateUser (USER_REQUEST) returns (USER_RESPONSE) {};
+    rpc deleteUser (USER_REQUEST) returns (USER_RESPONSE) {};
+    rpc registerMicroservice (MicroserviceConfig) returns (RegisterResponse) {};
+}
+
+message USER_REQUEST {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+}
+
+message USER_RESPONSE {
+    repeated User users = 1;
+    common.ErrorResponse error = 2;
+    common.SuccessResponse success = 3;
+}
+
+message USER_BY_ID_RESPONSE {
+    User user = 1;
+    common.ErrorResponse error = 2;
+    common.SuccessResponse success = 3;
+}
+
+message MicroserviceConfig {
+    string address = 1;
+    string packageName = 2;
+    string serviceName = 3;
+}
+
+message RegisterResponse {
+    bool success = 1;
+}
+

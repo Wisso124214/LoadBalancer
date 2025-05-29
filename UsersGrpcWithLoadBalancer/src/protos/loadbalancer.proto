@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package loadbalancer;
+
+service LoadBalancer {
+  rpc registerMicroservice (MicroserviceConfig) returns (RegisterResponse);
+  rpc redirectCall (RedirectRequest) returns (RedirectResponse);
+}
+
+message MicroserviceConfig {
+  string address = 1;
+  string packageName = 2;
+  string serviceName = 3;
+  string protoPath = 4; // Ruta al archivo .proto del microservicio
+  string serverUrl = 5; // URL del servidor del microservicio
+  string methodName = 6; // Nombre del método a invocar
+  string params = 7; // Parámetros para el método, en formato JSON o similar
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string message = 2; // Mensaje adicional, si es necesario
+}
+
+message RedirectRequest {
+    string methodName = 1;
+    string params = 2; // O usa un tipo adecuado según tu lógica
+}
+
+message RedirectResponse {
+  string result = 1; // Aquí puedes poner el JSON serializado de la respuesta real
+}

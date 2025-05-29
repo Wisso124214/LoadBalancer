@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package common;
+
+message ErrorResponse {
+    string message = 1;
+    int32 code = 2;
+}
+
+message SuccessResponse {
+    string message = 1;
+    int32 code = 2;
+}
