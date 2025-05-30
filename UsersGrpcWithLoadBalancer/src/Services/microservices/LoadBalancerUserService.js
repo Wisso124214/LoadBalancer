@@ -4,7 +4,6 @@ const LoadBalancer = require('../../Core/LoadBalancer');
 const grpc = require('@grpc/grpc-js');
 
 const { configLoadBalancerUsers } = require('../../../config/configGrpc');
-const { json } = require('express');
 
 const loadBalancer = new LoadBalancer();
 const server = new AdvancedGrpcServer(configLoadBalancerUsers);
@@ -13,9 +12,19 @@ const server = new AdvancedGrpcServer(configLoadBalancerUsers);
 server.addMethods({
 
     registerMicroservice: (call, callback) => {
+        console.log('Registro de microservicio recibido:');
         console.log(call.request);
         const config = call.request;
         loadBalancer.record.uploadTable(config); // Agrega el microservicio a la tabla
+        callback(null, { success: true });
+    },
+
+    updateHeartbeat: (call, callback) => {
+        const {address} = call.request;
+        const metrics = call.request
+        loadBalancer.record.updateHeartbeat(address, metrics);
+        loadBalancer.record.removeInactive(); // Limpia microservicios inactivos
+        
         callback(null, { success: true });
     },
 
@@ -52,6 +61,19 @@ server.addMethods({
     },
     // Puedes agregar aquí los demás métodos del UserService igual que arriba
 });
+
+setInterval(() => {
+    if (loadBalancer.record.tableMicroservices.length === 0) {
+        console.log('No hay microservicios registrados. Esperando...');
+        return;
+    }else {
+        loadBalancer.record.removeInactive(); // Limpia microservicios inactivos
+        console.log('Estado de los microservicios:');
+        loadBalancer.record.showMicroservicesStatus();
+
+        console.log('Microservicios registrados:', loadBalancer.record.tableMicroservices.length);
+    }
+}, 15000); // Cada 15 segundos
 
 server.start().then(info => {
     console.log('Balanceador de carga de usuarios iniciado:', info);

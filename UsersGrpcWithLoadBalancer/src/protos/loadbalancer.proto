@@ -5,6 +5,7 @@ package loadbalancer;
 service LoadBalancer {
   rpc registerMicroservice (MicroserviceConfig) returns (RegisterResponse);
   rpc redirectCall (RedirectRequest) returns (RedirectResponse);
+  rpc updateHeartbeat (MicroserviceConfig) returns (RegisterResponse);
 }
 
 message MicroserviceConfig {
@@ -15,6 +16,22 @@ message MicroserviceConfig {
   string serverUrl = 5; // URL del servidor del microservicio
   string methodName = 6; // Nombre del método a invocar
   string params = 7; // Parámetros para el método, en formato JSON o similar
+
+  // Nuevas métricas
+  Metrics metrics = 8; // Métricas del microservicio
+
+}
+
+message Metrics {
+  double cpuUsage = 1;           // Porcentaje de uso de CPU
+  double memoryUsage = 2;        // Porcentaje de memoria usada
+  double memoryAvailable = 3;    // Porcentaje de memoria disponible
+  double avgResponseTime = 4;    // Tiempo de respuesta promedio (ms)
+  int32 activeRequests = 5;      // Número de solicitudes activas
+  int32 maxRequests = 6;         // Máximo de solicitudes permitidas
+  double uptime = 8;             // Tiempo de actividad del microservicio (segundos)
+  string version = 9;            // Versión del microservicio
+  string nodeVersion = 10;       // Versión de Node.js
 }
 
 message RegisterResponse {
