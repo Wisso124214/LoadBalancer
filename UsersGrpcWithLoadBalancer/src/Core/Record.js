@@ -45,7 +45,7 @@ class Record {
             const responseTimeScore = (1 / Math.max(metrics.metrics.avgResponseTime, 1)) * responseTimeWeight * 1000;
             const activeRequestsScore = (1 / (metrics.metrics.activeRequests + 1)) * activeRequestsWeight * 100;
 
-            console.log("NAN"+cpuScore,memoryScore,responseTimeScore,activeRequestsScore);
+            console.log("NAN",cpuScore,memoryScore,responseTimeScore,activeRequestsScore);
             
             const totalScore = cpuScore + memoryScore + responseTimeScore + activeRequestsScore;
             
@@ -88,13 +88,14 @@ Metrics: ${microservice.metrics ? JSON.stringify(microservice.metrics) : 'No met
     }
 
     uploadTable(configMicroservice) {
+        
     if (configMicroservice) {
         configMicroservice.lastHeartbeat = Date.now();
 
         let index = -1;
 
-        for (let t of this.tableMicroservices) {
-            if (t.address === configMicroservice.address) index = t;
+        for (let t in this.tableMicroservices) {
+            if (this.tableMicroservices[t].address === configMicroservice.address) index = t;
         }
 
         if (index === -1) {
@@ -106,9 +107,8 @@ Metrics: ${microservice.metrics ? JSON.stringify(microservice.metrics) : 'No met
     }
 }
 
-    updateHeartbeat(address, metrics) {
-        console.log(metrics);
-        
+    updateHeartbeat(address, metrics) { 
+               
         const record = this.tableMicroservices.find(m => m.address === address);
         if (record) {
             record.lastHeartbeat = Date.now();
