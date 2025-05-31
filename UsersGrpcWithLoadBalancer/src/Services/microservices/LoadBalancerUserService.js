@@ -30,13 +30,15 @@ server.addMethods({
 
     redirectCall: (call, callback) => {
         const microservice = loadBalancer.record.getOptimalMicroservice();
+        console.log(microservice+"MICROSERVICO\n");
+        
         if (!microservice) {
             return callback({
                 code: grpc.status.UNAVAILABLE,
                 message: 'No available microservices'
             });
         }
-        console.log('Redirigiendo llamada a microservicio:', microservice);
+        console.log('Redirigiendo llamada a microservicio:', microservice.address);
         path = require('path');
 
         microservice.protoPath = path.join(__dirname, '../../protos/user.proto');
@@ -72,8 +74,12 @@ setInterval(() => {
         loadBalancer.record.showMicroservicesStatus();
 
         console.log('Microservicios registrados:', loadBalancer.record.tableMicroservices.length);
+        console.log(
+        'Microservicios activos:',
+        loadBalancer.record.tableMicroservices.map(ms => ms.address)
+        );
     }
-}, 15000); // Cada 15 segundos
+}, 3000); // Cada 15 segundos
 
 server.start().then(info => {
     console.log('Balanceador de carga de usuarios iniciado:', info);

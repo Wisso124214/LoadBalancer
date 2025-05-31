@@ -39,5 +39,5 @@ app.get('/users/:id', async (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor principal escuchando en http://192.168.18.47:${PORT}`);
+    console.log(`Servidor principal escuchando en 192.168.140.124:${PORT}`);
 });
