@@ -67,11 +67,10 @@ server.use(activeRequestMiddleware);
     setInterval(async() => {
         const currentMetrics = await metrics.getCurrentMetrics();
         configUserService.metrics = currentMetrics;
+        
         balanceadorClient.call('updateHeartbeat', configUserService)
         
-        
         .then(response => {
-            console.log(configUserService),
             console.log('Heartbeat actualizado en el balanceador de carga:', response);
         })
         .catch(err => {

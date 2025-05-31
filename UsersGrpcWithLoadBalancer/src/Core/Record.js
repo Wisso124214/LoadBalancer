@@ -87,20 +87,33 @@ Metrics: ${microservice.metrics ? JSON.stringify(microservice.metrics) : 'No met
         }
     }
 
-    uploadTable(configMicroservice){
-        if(configMicroservice){
-            configMicroservice.lastHeartbeat = Date.now();
+    uploadTable(configMicroservice) {
+    if (configMicroservice) {
+        configMicroservice.lastHeartbeat = Date.now();
+
+        let index = -1;
+
+        for (let t of this.tableMicroservices) {
+            if (t.address === configMicroservice.address) index = t;
+        }
+
+        if (index === -1) {
+            
             this.tableMicroservices.push(configMicroservice);
+        } else {
+            this.tableMicroservices[index] = configMicroservice;
         }
     }
+}
 
     updateHeartbeat(address, metrics) {
-        const record = this.tableMicroservices.find(m => m.address === address);
-        console.log("RECORD : "+JSON.stringify(record));
+        console.log(metrics);
         
+        const record = this.tableMicroservices.find(m => m.address === address);
         if (record) {
             record.lastHeartbeat = Date.now();
-            this.tableMicroservices[record] = metrics
+            // Actualiza solo las métricas, sin crear un nuevo objeto
+            this.uploadTable(metrics)
         }
     }
 
