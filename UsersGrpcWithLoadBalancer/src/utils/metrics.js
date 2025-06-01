@@ -1,6 +1,7 @@
 // filepath: c:\Users\Juan\Desktop\Universidad\LoadBalancer\UsersGrpcWithLoadBalancer\src\utils\metrics.js
 const os = require('os');
 const process = require('process');
+const { exec } = require('child_process');
 const { getActiveRequests, getAvgResponseTime, hasGPU } = require('../Services/microservices/middelwares/activeRequest');
 
 // Calcula el uso de CPU como porcentaje (promedio durante 100ms)
@@ -18,10 +19,36 @@ async function getCpuUsage() {
         }, 100);
     });
 }
-
+async function getCpuUsageWindows() {
+    return new Promise((resolve, reject) => {
+        exec('wmic cpu get loadpercentage', (error, stdout, stderr) => {
+            if (error) {
+                reject(`Error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                reject(`Stderr: ${stderr}`);
+                return;
+            }
+            const match = stdout.match(/(\d+)/);
+            if (!match) {
+                reject('No se pudo extraer el porcentaje de CPU.');
+                return
+            }
+                resolve(parseInt(match[1], 10));
+        });
+    });
+}
 async function getCurrentMetrics() {
+    let cpuUsage = null;
+    try {
+        cpuUsage = await getCpuUsageWindows();
+    } catch (err) {
+        console.error('Error obteniendo CPU:', err);
+        cpuUsage = 100;
+    }
     return {
-        cpuUsage: await getCpuUsage(),
+        cpuUsage,
         memoryUsage: (1 - (os.freemem() / os.totalmem())) * 100,
         memoryAvailable: (os.freemem() / os.totalmem()) * 100,
         avgResponseTime: getAvgResponseTime(),
