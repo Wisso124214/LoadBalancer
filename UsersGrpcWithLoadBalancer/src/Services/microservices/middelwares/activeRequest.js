@@ -1,40 +1,27 @@
 let activeRequests = 0;
 let responseTimes = [];
 
-/**
- * Middleware para trackear requests y tiempos de respuesta.
- * Úsalo en tu wrapper de middlewares.
- */
-async function activeRequestMiddleware(call) {
+function activeRequestMiddleware(call) {
     activeRequests++;
+    console.log(`[activeRequestMiddleware] Incrementa: activeRequests = ${activeRequests}`);
     const start = Date.now();
 
-    // El handler principal se ejecuta después de todos los middlewares,
-    // así que no puedes medir el tiempo exacto aquí.
-    // Pero puedes usar un hook en el handler para medir el tiempo real de respuesta.
-
-    // Para solo contar las requests activas:
-    // Cuando termine la respuesta, decrementa el contador.
-    // Si usas gRPC, puedes hacer esto:
     if (call && call.on) {
         call.on('end', () => {
             const duration = Date.now() - start;
             responseTimes.push(duration);
             activeRequests--;
-            if (responseTimes.length > 100) responseTimes.shift();
-        });
-    } else {
-        // fallback por si call no tiene 'on'
-        setImmediate(() => {
-            const duration = Date.now() - start;
-            responseTimes.push(duration);
-            activeRequests--;
+            console.log(`[activeRequestMiddleware] Decrementa (end): activeRequests = ${activeRequests}`);
             if (responseTimes.length > 100) responseTimes.shift();
         });
     }
 }
 
-// Funciones para exponer métricas
+function decrementActiveRequests() {
+    activeRequests--;
+    console.log(`[decrementActiveRequests] Decrementa (callback): activeRequests = ${activeRequests}`);
+}
+
 function getActiveRequests() {
     return activeRequests;
 }
@@ -47,5 +34,6 @@ function getAvgResponseTime() {
 module.exports = {
     activeRequestMiddleware,
     getActiveRequests,
-    getAvgResponseTime
+    getAvgResponseTime,
+    decrementActiveRequests
 };

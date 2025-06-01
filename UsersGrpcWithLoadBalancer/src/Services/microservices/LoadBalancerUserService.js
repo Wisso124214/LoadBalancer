@@ -68,18 +68,21 @@ setInterval(() => {
     if (loadBalancer.record.tableMicroservices.length === 0) {
         console.log('No hay microservicios registrados. Esperando...');
         return;
-    }else {
+    } else {
         loadBalancer.record.removeInactive(); // Limpia microservicios inactivos
-        console.log('Estado de los microservicios:');
+        console.log('=== Estado de los microservicios ===');
         loadBalancer.record.showMicroservicesStatus();
 
-        console.log('Microservicios registrados:', loadBalancer.record.tableMicroservices.length);
-        console.log(
-        'Microservicios activos:',
-        loadBalancer.record.tableMicroservices.map(ms => ms.address)
-        );
+        // console.log(`Total registrados: ${loadBalancer.record.tableMicroservices.length}`);
+        // console.log('Microservicios activos:');
+        // loadBalancer.record.tableMicroservices.forEach((ms, idx) => {
+        //     console.log(
+        //         `  [${idx + 1}] ${ms.address} | Último heartbeat: ${new Date(ms.lastHeartbeat).toLocaleTimeString()}`
+        //     );
+        // });
+        // console.log('====================================\n');
     }
-}, 3000); // Cada 15 segundos
+}, 5000); // Cada 5 segundos
 
 server.start().then(info => {
     console.log('Balanceador de carga de usuarios iniciado:', info);

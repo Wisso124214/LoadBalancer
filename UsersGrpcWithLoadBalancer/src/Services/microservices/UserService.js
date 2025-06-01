@@ -2,7 +2,7 @@ const grpcServer = require('../../Core/GrpcWrapperServer.js');
 const grpcClient = require('../../Core/GrpcWrapperClient.js');
 const { configUserService, configLoadBalancerUsers } = require('../../../config/configGrpc.js');
 const metrics = require('../../utils/metrics.js');
-const { activeRequestMiddleware } = require('./middelwares/activeRequest.js');
+const { decrementActiveRequests, activeRequestMiddleware } = require('./middelwares/activeRequest.js');
 const addFakeToken = require('./middelwares/addFakeToken.js');
 
 const server = new grpcServer(configUserService);
@@ -26,17 +26,21 @@ server.use(activeRequestMiddleware);
 
     server.addMethods({
         getAllUsers: (call, callback) => {
-            const metadata = server.createMetadata({ 'fake-token2': call.metadata.fakeToken, "user": "admin" });
-            call.sendMetadata(metadata);
-            const users = [
-                { id: "1", name: "John Doe", email: "jhon@gmail.com" },
-                { id: "2", name: "Jane Smith", email: "jane@gmail.com" }
-            ];
-            console.log("holiwi");
-            
-            const successMessage = "Users retrieved successfully";
-            callback(null, { users: users, success: { message: successMessage, code: 200 } });
-        },
+    const metadata = server.createMetadata({ 'fake-token2': call.metadata.fakeToken, "user": "admin" });
+    call.sendMetadata(metadata);
+
+    // Simula procesamiento lento (por ejemplo, 500ms)
+    setTimeout(() => {
+        const users = [
+            { id: "1", name: "John Doe", email: "jhon@gmail.com" },
+            { id: "2", name: "Jane Smith", email: "jane@gmail.com" }
+        ];
+        console.log("holiwi");
+        const successMessage = "Users retrieved successfully";
+        callback(null, { users: users, success: { message: successMessage, code: 200 } });
+        decrementActiveRequests();
+    }, 500); // <-- Cambia el tiempo para simular más o menos carga
+}
     });
 
     server.addMethodsWithoutMiddelwares({
