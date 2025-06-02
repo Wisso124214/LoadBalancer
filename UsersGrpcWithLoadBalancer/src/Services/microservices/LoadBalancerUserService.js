@@ -1,6 +1,7 @@
 const AdvancedGrpcServer = require('../../Core/GrpcWrapperServer');
 const grpcClient = require('../../Core/GrpcWrapperClient');
 const LoadBalancer = require('../../Core/LoadBalancer');
+const dashboard = require('../../utils/panelDashboard');
 const grpc = require('@grpc/grpc-js');
 
 const { configLoadBalancerUsers } = require('../../../config/configGrpc');
@@ -12,10 +13,12 @@ const server = new AdvancedGrpcServer(configLoadBalancerUsers);
 server.addMethods({
 
     registerMicroservice: (call, callback) => {
-        console.log('Registro de microservicio recibido:');
-        console.log(call.request);
+        dashboard.addLog(`[loadBalancer] Solicitud de registro recibida de ${JSON.stringify(call.request.address)}`);
         const config = call.request;
-        loadBalancer.record.uploadTable(config); // Agrega el microservicio a la tabla
+        const tableMicroservices = loadBalancer.record.uploadTable(config);
+
+        dashboard.setPanel2Data(tableMicroservices); 
+
         callback(null, { success: true });
     },
 
@@ -30,7 +33,7 @@ server.addMethods({
 
     redirectCall: (call, callback) => {
         const microservice = loadBalancer.record.getOptimalMicroservice();
-        console.log(microservice+"MICROSERVICO\n");
+        // console.log(microservice+"MICROSERVICO\n");
         
         if (!microservice) {
             return callback({
@@ -38,7 +41,7 @@ server.addMethods({
                 message: 'No available microservices'
             });
         }
-        console.log('Redirigiendo llamada a microservicio:', microservice.address);
+        dashboard.addLog('[LoadBalancer]Redirigiendo llamada a microservicio:', microservice.address);
         path = require('path');
 
         microservice.protoPath = path.join(__dirname, '../../protos/user.proto');
@@ -66,11 +69,10 @@ server.addMethods({
 
 setInterval(() => {
     if (loadBalancer.record.tableMicroservices.length === 0) {
-        console.log('No hay microservicios registrados. Esperando...');
+        dashboard.addLog('No hay microservicios registrados. Esperando...');
         return;
     } else {
         loadBalancer.record.removeInactive(); // Limpia microservicios inactivos
-        console.log('=== Estado de los microservicios ===');
         loadBalancer.record.showMicroservicesStatus();
 
         // console.log(`Total registrados: ${loadBalancer.record.tableMicroservices.length}`);
@@ -85,5 +87,7 @@ setInterval(() => {
 }, 5000); // Cada 5 segundos
 
 server.start().then(info => {
-    console.log('Balanceador de carga de usuarios iniciado:', info);
+    dashboard.start();
+    dashboard.addLog('Servidor de balanceador de carga iniciado');
+    dashboard.setBalanceadorInfo(info);
 });

@@ -1,3 +1,6 @@
+const dashboard = require('../utils/panelDashboard.js');
+const { configLoadBalancerUsers } = require('../../config/configGrpc.js');
+
 class Record {
     constructor(){
         this.tableMicroservices = [];
@@ -6,11 +9,13 @@ class Record {
 
     getOptimalMicroservice() {
     if (this.tableMicroservices.length === 0) {
-        console.log('\n[LoadBalancer] No hay microservicios registrados.\n');
+        dashboard.addLog('\n[LoadBalancer] No hay microservicios registrados.\n');
         return null;
     }
 
-    console.log('\n[LoadBalancer] === Filtro de microservicios viables ===');
+    dashboard.addLog('\n[LoadBalancer] Filtrando microservicios viables...');
+
+
     const viableMicroservices = this.tableMicroservices.filter(metrics => {
         const m = metrics.metrics || {};
         const cpu = metrics.cpuUsage ?? m.cpuUsage ?? 100;
@@ -18,20 +23,23 @@ class Record {
         const act = metrics.activeRequests ?? m.activeRequests ?? Infinity;
         const max = metrics.maxRequests ?? m.maxRequests ?? 0;
 
-        const result = cpu < 90 && mem > 10 && act < max;
+        const result = cpu < configLoadBalancerUsers.maxCpuUsage && mem > configLoadBalancerUsers.maxMemoryAvailable && act < max;
 
-        console.log(
+        dashboard.addLog(
             `  - ${metrics.address || 'sin address'} | CPU: ${cpu}% | MemAvail: ${mem}% | ActiveReq: ${act} | MaxReq: ${max} | Viable: ${result ? '✅' : '❌'}`
         );
         return result;
     });
 
     if (viableMicroservices.length === 0) {
-        console.log('[LoadBalancer] Ningún microservicio es viable.\n');
+        dashboard.addLog('[LoadBalancer] Ningún microservicio es viable.\n');
+        dashboard.setPanel5Data(viableMicroservices);
         return null;
     }
 
-    console.log(`[LoadBalancer] Microservicios viables: ${viableMicroservices.length}\n`);
+    dashboard.addLog(`[LoadBalancer] Microservicios viables: ${viableMicroservices.length}\n`);
+
+    dashboard.setPanel5Data(viableMicroservices);
 
     const scoredMicroservices = viableMicroservices.map(metrics => {
         const m = metrics.metrics || {};
@@ -53,7 +61,8 @@ class Record {
 
         const totalScore = cpuScore + memoryScore + responseTimeScore + activeRequestsScore;
 
-        console.log(
+
+        dashboard.addLog(
             `[Scoring] ${metrics.address}: ` +
             `CPU=${cpuScore.toFixed(2)}, Mem=${memoryScore.toFixed(2)}, RT=${responseTimeScore.toFixed(2)}, Act=${activeRequestsScore.toFixed(2)} ` +
             `=> TOTAL=${totalScore.toFixed(2)}`
@@ -66,27 +75,30 @@ class Record {
     });
 
     // Orden descendente: mayor score es mejor
+
+    // console.log(scoredMicroservices);
+
     scoredMicroservices.sort((a, b) => b.score - a.score);
 
     const elegido = scoredMicroservices[0].microservice;
-    console.log(`\n[LoadBalancer] Microservicio elegido como óptimo: ${elegido.address}\n`);
+    dashboard.addLog(`\n[LoadBalancer] Microservicio elegido como óptimo: ${elegido.address}\n`);
     return elegido;
 }
 
 showMicroservicesStatus() {
-    console.log('\n[LoadBalancer] === Microservicios activos ===');
     if (this.tableMicroservices.length === 0) {
         console.log('  Ninguno.\n');
         return;
     }
-    this.tableMicroservices.forEach((microservice, idx) => {
-        console.log(
-            `  [${idx + 1}] ${microservice.address}\n` +
-            `      Último Heartbeat: ${new Date(microservice.lastHeartbeat).toLocaleTimeString()}\n` +
-            `      Métricas: ${microservice.metrics ? JSON.stringify(microservice.metrics, null, 2) : 'No metrics available'}\n`
-        );
-    });
-    console.log('==========================================\n');
+    dashboard.setPanel3Data(this.tableMicroservices);
+    // this.tableMicroservices.forEach((microservice, idx) => {
+    //     console.log(
+    //         `  [${idx + 1}] ${microservice.address}\n` +
+    //         `      Último Heartbeat: ${new Date(microservice.lastHeartbeat).toLocaleTimeString()}\n` +
+    //         `      Métricas: ${microservice.metrics ? JSON.stringify(microservice.metrics, null, 2) : 'No metrics available'}\n`
+    //     );
+    // });
+    // console.log('==========================================\n');
 }
 
 showMicrosservicesStatusWithMetricsSpecific(address) {
@@ -114,16 +126,17 @@ showMicrosservicesStatusWithMetricsSpecific(address) {
         }
 
         if (index === -1) {
-            
             this.tableMicroservices.push(configMicroservice);
+            return this.tableMicroservices;
         } else {
             this.tableMicroservices[index] = configMicroservice;
+            return this.tableMicroservices;
         }
     }
 }
 
     updateHeartbeat(address, metrics) { 
-               
+    
         const record = this.tableMicroservices.find(m => m.address === address);
         if (record) {
             record.lastHeartbeat = Date.now();
