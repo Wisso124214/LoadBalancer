@@ -29,6 +29,7 @@ server.addMethods({
     },
 
     redirectCall: (call, callback) => {
+        console.log('cc: ', call, callback);
         const microservice = loadBalancer.record.getOptimalMicroservice();
         console.log(microservice+"MICROSERVICO\n");
         

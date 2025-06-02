@@ -13,9 +13,6 @@ server.use(activeRequestMiddleware);
 
 (async () => {
     // Espera a obtener las métricas reales
-
-    console.log(configUserService);
-
     balanceadorClient.call('registerMicroservice', configUserService)
         .then(response => {
             console.log('Microservicio registrado en el balanceador de carga:', response);
@@ -35,7 +32,7 @@ server.use(activeRequestMiddleware);
             { id: "1", name: "John Doe", email: "jhon@gmail.com" },
             { id: "2", name: "Jane Smith", email: "jane@gmail.com" }
         ];
-        console.log("holiwi");
+
         const successMessage = "Users retrieved successfully";
         callback(null, { users: users, success: { message: successMessage, code: 200 } });
         decrementActiveRequests();
@@ -80,7 +77,7 @@ server.use(activeRequestMiddleware);
         .catch(err => {
             console.error('Error al actualizar el heartbeat en el balanceador de carga:', err);
         });
-    }, 1000); // Actualiza el heartbeat cada 15 segundos
+    }, 1000); // Actualiza el heartbeat
 
     // Iniciar servidor y ejemplo de shutdown
     server.start()
