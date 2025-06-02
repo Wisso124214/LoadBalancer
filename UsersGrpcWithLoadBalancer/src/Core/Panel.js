@@ -45,15 +45,15 @@ class PanelDashboard {
           'Resp(ms)', 'RQon', '  Max', ' Uptime'
           ],
           data: microservices.map(ms => [
-            ms.address,
-            ms.lastHeartbeat,
-            ms.metrics.cpuUsage || "N/A",
-            ms.metrics.memoryUsage.toFixed(2),
-            ms.metrics.memoryAvailable.toFixed(2),
-            ms.metrics.avgResponseTime,
-            ms.metrics.activeRequests,
-            ms.metrics.maxRequests,
-            ms.metrics.uptime.toFixed(2)
+            ms.address ?? '-',
+            ms.lastHeartbeat ?? '-',
+            ms.metrics?.cpuUsage ?? '-',
+            ms.metrics?.memoryUsage !== undefined ? ms.metrics.memoryUsage.toFixed(2) : '-',
+            ms.metrics?.memoryAvailable !== undefined ? ms.metrics.memoryAvailable.toFixed(2) : '-',
+            ms.metrics?.avgResponseTime ?? '-',
+            ms.metrics?.activeRequests ?? '-',
+            ms.metrics?.maxRequests ?? '-',
+            ms.metrics?.uptime !== undefined ? ms.metrics.uptime.toFixed(2) : '-'
           ])
       });
     }

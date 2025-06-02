@@ -41,7 +41,8 @@ server.addMethods({
                 message: 'No available microservices'
             });
         }
-        dashboard.addLog('[LoadBalancer]Redirigiendo llamada a microservicio:', microservice.address);
+        
+        dashboard.addLog('[LoadBalancer]Redirigiendo llamada a microservicio:'+ microservice.address);
         path = require('path');
 
         microservice.protoPath = path.join(__dirname, '../../protos/user.proto');

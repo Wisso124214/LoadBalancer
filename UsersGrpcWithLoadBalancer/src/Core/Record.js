@@ -25,9 +25,6 @@ class Record {
 
         const result = cpu < configLoadBalancerUsers.maxCpuUsage && mem > configLoadBalancerUsers.maxMemoryAvailable && act < max;
 
-        dashboard.addLog(
-            `  - ${metrics.address || 'sin address'} | CPU: ${cpu}% | MemAvail: ${mem}% | ActiveReq: ${act} | MaxReq: ${max} | Viable: ${result ? '✅' : '❌'}`
-        );
         return result;
     });
 

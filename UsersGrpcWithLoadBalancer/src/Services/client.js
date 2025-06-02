@@ -1,8 +1,8 @@
 // stressTest.js
 const axios = require('axios');
 
-const URL = 'http://192.168.2.100:3000/users'; // Cambia a /users/:id si quieres probar ese endpoint
-const CONCURRENCY = 50; // Número de requests simultáneas
+const URL = 'http://192.168.140.124:3000/users'; // Cambia a /users/:id si quieres probar ese endpoint
+const CONCURRENCY = 10; // Número de requests simultáneas
 const REPETICIONES = 20; // Cuántos lotes de requests lanzar
 
 async function sendRequest(i) {
