@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.4",
+    "axios": "^1.9.0",
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.11.0",
+    "express": "^5.1.0"
+  }
+}

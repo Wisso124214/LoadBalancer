@@ -9,7 +9,7 @@ const server_address = `http://${configServer.address}:${configServer.PORT}`;
 const configUsersSimulator = {
   // delayBetweenRequests: 1000 / 1000,    // Tiempo entre solicitudes en milisegundos
   endpoint: `${server_address}/users`,
-  threads: 100,
+  threads: 20,
 }
 
 module.exports = {
