@@ -11,6 +11,8 @@ const configLoadBalancerUsers = {
         maxRetries: 0, // Deshabilitar reintentos para el balanceador de carga el numero representa el numero de reintentos
         retryDelay: 100, // Tiempo de espera entre reintentos en milisegundos
     },
+    checkQueueInterval: 100,
+    retriesRequest: 5, 
 };
 
 const configUserService = {

@@ -1,7 +1,7 @@
 const grpcClient = require('../../Core/GrpcWrapperClient.js');
-const config = require('../../../config/configGrpc.js');
+const { configUserService } = require('../../../config/configGrpc.js');
 
-const client = new grpcClient(config);
+const client = new grpcClient(configUserService);
 
 async function getAllUsers() {
     try {
