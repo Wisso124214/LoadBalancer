@@ -24,17 +24,18 @@ if (isMainThread) {
         const seconds = Math.floor(elapsedTime / 1000);
         const minutes = Math.floor(seconds / 60);
         const hours = Math.floor(minutes / 60);
-        console.clear();
+        // console.clear();
         console.log(
           '\n\n' +
           `Tiempo transcurrido: ${hours}h ${minutes % 60}m ${seconds % 60}s\n` +
           `Solicitudes contestadas: ${totalRequests}\n` +
-          `Respuestas exitosas: ${totalSuccess}\n` +
-          `Respuestas erróneas: ${totalError}\n`
+          `Respuestas exitosas: ${totalSuccess} (${(totalSuccess/totalRequests * 100).toFixed(2)}%)\n` +
+          `Respuestas erróneas: ${totalError} (${(totalError/totalRequests * 100).toFixed(2)}%)\n` +
+          `Tiempo promedio de respuesta: ${(elapsedTime / totalRequests).toFixed(2)} ms\n`
         );
       }
     });
-    worker.on('error', (err) => { throw err; });
+    worker.on('error', (err) => { console.log(err); throw err; });
     worker.on('exit', (code) => {
       if (code !== 0) console.error(`Worker ${i} terminó con código ${code}`);
     });
@@ -61,10 +62,11 @@ if (isMainThread) {
     const delay = configUsersSimulator.delayBetweenRequests || 1;
     setTimeout(async () => {
       try {
-        // await axios.get(configUsersSimulator.endpoint);
+        await axios.get(configUsersSimulator.endpoint);
         counterSuccessRequests++;
       } catch (error) {
         counterErrorRequests++;
+        console.error(`Error en la solicitud: ${error.message}`);
       }
       counterRequests++;
       sendStats();
