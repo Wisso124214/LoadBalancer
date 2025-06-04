@@ -18,15 +18,17 @@ class Record {
 
     const viableMicroservices = this.tableMicroservices.filter(metrics => {
         const m = metrics.metrics || {};
+        console.log('metr', metrics)
         const cpu = metrics.cpuUsage ?? m.cpuUsage ?? 100;
         const mem = metrics.memoryAvailable ?? m.memoryAvailable ?? 0;
         const act = metrics.activeRequests ?? m.activeRequests ?? Infinity;
         const max = metrics.maxRequests ?? m.maxRequests ?? 0;
-
         const result = cpu < configLoadBalancerUsers.maxCpuUsage && mem > configLoadBalancerUsers.maxMemoryAvailable && act < max;
 
         return result;
     });
+
+    console.log('VIA', viableMicroservices)
 
     if (viableMicroservices.length === 0) {
         dashboard.addLog('[LoadBalancer] Ningún microservicio es viable.\n');
@@ -41,7 +43,7 @@ class Record {
     const scoredMicroservices = viableMicroservices.map(metrics => {
         const m = metrics.metrics || {};
 
-        const cpuUsage = m.cpuUsage ?? 100;
+        const cpuUsage = m.cpuUsage ?? 0;
         const memoryAvailable = m.memoryAvailable ?? 0;
         const avgResponseTime = m.avgResponseTime ?? Infinity;
         const activeRequests = m.activeRequests ?? Infinity;
