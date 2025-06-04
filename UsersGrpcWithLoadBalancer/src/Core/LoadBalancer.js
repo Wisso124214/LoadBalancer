@@ -13,13 +13,9 @@ class LoadBalancer {
     }
 
     balanceCall(){
-        console.log(1);
-        
         const microservice = this.record.getOptimalMicroservice();
         console.log(microservice);
-
     }
-
 }
 
 // ejemplo de uso

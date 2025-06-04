@@ -1,6 +1,7 @@
 const express = require('express');
 const AdvancedGrpcClient = require('../Core/GrpcWrapperClient');
-const {configLoadBalancerUsers} = require('../../config/configGrpc');
+const { configLoadBalancerUsers } = require('../../config/configGrpc');
+const { server_address, configServer } = require('../../config/configServices.js');
 
 const app = express();
 app.use(express.json());
@@ -37,8 +38,6 @@ app.get('/users/:id', async (req, res) => {
 });
 
 // Puedes agregar más endpoints que llamen a otros métodos gRPC si lo necesitas
-
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor principal escuchando en http://192.168.140.124:${PORT}`);
+app.listen(configServer.PORT, () => {
+    console.log(`Servidor principal escuchando en ${server_address}`);
 });

@@ -9,6 +9,75 @@ const { configLoadBalancerUsers } = require('../../../config/configGrpc');
 const loadBalancer = new LoadBalancer();
 const server = new AdvancedGrpcServer(configLoadBalancerUsers);
 
+let requestsQueue = [];
+
+const addRequestToQueue = (call, callback, retries = 0) => {
+    requestsQueue.push({ call, callback, retries });
+    const response = 'Llamada agregada a la cola. Total en cola: ' + requestsQueue.length;
+    console.log(response);
+    
+    if (requestsQueue.length === 1) {
+        console.log('Procesando la primera llamada en la cola...');
+        processQueue();
+    }
+};
+
+const processQueue = () => {
+    if (requestsQueue.length === 0) {
+        const message = 'No hay llamadas en la cola para procesar.';
+        console.log(message);
+        return {
+            code: grpc.status.OK,
+            message: message
+        };
+    }
+
+    const { call, callback, retries } = requestsQueue.shift();
+    console.log('Procesando llamada de la cola. Llamadas restantes:', requestsQueue.length);
+
+    const microservice = loadBalancer.record.getOptimalMicroservice();
+    
+    if (!microservice) {
+        console.log('No hay microservicios disponibles.');
+        if (retries < configLoadBalancerUsers.retriesRequest) {
+            console.log(' Reintentando...', retries)
+            addRequestToQueue(call, callback, retries + 1);
+        }
+
+        return callback({
+            code: grpc.status.UNAVAILABLE,
+            message: 'No hay microservicios disponibles en este momento.'
+        });
+    }
+
+    console.log('Redirigiendo llamada a microservicio:', microservice.address);
+    path = require('path');
+
+    microservice.protoPath = path.join(__dirname, '../../protos/user.proto');
+
+    const client = new grpcClient(microservice);
+    
+    const methodName = call.request.methodName;
+    let params;
+
+    if(!params)  params = JSON.parse(call.request.params || '{}');
+    
+    client.call(methodName, params)
+    .then(response => {
+        callback(null, { result: JSON.stringify(response) });
+    })
+    .catch(err => {
+        callback({
+            code: grpc.status.INTERNAL,
+            message: err.message || 'Unknown Error'
+        });
+    });
+
+    setTimeout(() => {
+        processQueue();
+    }, 100);
+};
+
 // Implementa los métodos del UserService, redirigiendo al microservicio óptimo
 server.addMethods({
 
@@ -32,38 +101,7 @@ server.addMethods({
     },
 
     redirectCall: (call, callback) => {
-        const microservice = loadBalancer.record.getOptimalMicroservice();
-        // console.log(microservice+"MICROSERVICO\n");
-        
-        if (!microservice) {
-            return callback({
-                code: grpc.status.UNAVAILABLE,
-                message: 'No available microservices'
-            });
-        }
-        
-        dashboard.addLog('[LoadBalancer]Redirigiendo llamada a microservicio:'+ microservice.address);
-        path = require('path');
-
-        microservice.protoPath = path.join(__dirname, '../../protos/user.proto');
-
-        const client = new grpcClient(microservice);
-       
-        const methodName = call.request.methodName;
-        let params;
-
-        if(!params)  params = JSON.parse(call.request.params || '{}');
-        
-        client.call(methodName, params)
-        .then(response => {
-            callback(null, { result: JSON.stringify(response) });
-        })
-        .catch(err => {
-            callback({
-                code: grpc.status.INTERNAL,
-                message: err.message || 'Unknown Error'
-            });
-        });
+        addRequestToQueue(call, callback);
     },
     // Puedes agregar aquí los demás métodos del UserService igual que arriba
 });

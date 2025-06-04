@@ -16,9 +16,11 @@ const configLoadBalancerUsers = {
     },
     maxCpuUsage: 90, // Porcentaje máximo de uso de CPU permitido para el balanceador de carga
     maxMemoryAvailable: 10, // Porcentaje mínimo de memoria disponible permitido para el balanceador de carga
+    checkQueueInterval: 100,
+    retriesRequest: 5, 
 };
 
-let configUserService = {
+const configUserService = {
     protoPath: path.join(__dirname, '../src/protos/user.proto'),
     packageName: 'users',
     serviceName: 'UserService',
